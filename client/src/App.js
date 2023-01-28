@@ -17,19 +17,16 @@ const App = () => {
 
   async function sendURL() {
     try {
-      const request = await fetch(
-        "https://web-aggregator-chatgpt-backend.vercel.app/url",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            url,
-          }),
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const request = await fetch("http://localhost:8000/url", {
+        method: "POST",
+        body: JSON.stringify({
+          url,
+        }),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
       const data = await request.json();
       if (data.message) {
         setLoading(false);

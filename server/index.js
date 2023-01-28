@@ -4,7 +4,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const express = require("express");
 const puppeteer = require("puppeteer");
-import { ChatGPTAPIBrowser } from "chatgpt";
+import { Configuration, OpenAIApi } from "openai";
 const cors = require("cors");
 const app = express();
 const PORT = process.env.SERVER_PORT;
@@ -20,6 +20,7 @@ const PORT = process.env.SERVER_PORT;
 //application/x-www-form-urlencoded.
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 app.use(cors());
 
 app.get("/", (req, res) => {
@@ -31,26 +32,33 @@ app.get("/", (req, res) => {
 const database = [];
 const generateID = () => Math.random().toString(36).substring(2, 10);
 
+const configuration = new Configuration({
+  apiKey: process.env.API_KEY,
+});
+
+const openai = new OpenAIApi(configuration);
+
 async function chatgptFunction(content) {
-  // use puppeteer to bypass cloudflare (headful because of captchas)
-  const api = new ChatGPTAPIBrowser({
-    email: process.env.CHAT_GPT_EMAIL,
-    password: process.env.CHAT_GPT_PASSWORD,
-    isGoogleLogin: true,
+  const getBrandName = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt: `I have a raw text of a website, what is the 
+      brand name in a single word? ${content}`,
+    temperature: 0,
+    max_tokens: 100,
   });
-  await api.initSession();
 
-  const getBrandName = await api.sendMessage(
-    `I have a raw text of a website, what is the brand name in a single word? ${content}`
-  );
-
-  const getBrandDescription = await api.sendMessage(
-    `I have a raw text of a website, can you extract the description of the website from the raw text. I need only the description and nothing else. ${content}`
-  );
+  const getBrandDescription = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt: `I have a raw text of a website, can you extract the 
+      description of the website from the raw text. I need only the 
+      description and nothing else. ${content}`,
+    temperature: 0,
+    max_tokens: 100,
+  });
 
   return {
-    brandName: getBrandName.response,
-    brandDescription: getBrandDescription.response,
+    brandName: getBrandName.data.choices[0].text,
+    brandDescription: getBrandDescription.data.choices[0].text,
   };
 }
 
@@ -113,4 +121,4 @@ app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
 });
 
-module.exports = app;
+// module.exports = app;

@@ -18,7 +18,16 @@ button {
   outline: none;
   border: none;
   background-color: #6d9886;
+  border-radius: 5px;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  transition: 0.5s all ease-in-out;
 }
+
+button:hover {
+  background-color: #376e57;
+}
+
 .home,
 .home__form,
 .website__item,
